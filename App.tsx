@@ -4,11 +4,15 @@ import Header from './components/layout/Header';
 import Sidebar from './components/layout/Sidebar';
 import VideoGrid from './components/video/VideoGrid';
 import UploadModal from './components/video/UploadModal';
-import AgeGate from './components/ui/AgeGate';
+import AgeGate from './components/ui/video/AgeGate';
 import { useWeb3 } from './hooks/useWeb3';
 import { Video, Category } from './types';
 import { fetchVideos } from './services/blockchainService';
 import VideoDetailView from './components/video/VideoDetailView';
+import { ThirdwebProvider } from "@thirdweb-dev/react";
+import { client, chain } from './services/thirdweb';
+import { DatabaseService } from './services/database';
+import { getFarcasterUser } from './services/farcaster';
 
 const App: React.FC = () => {
   const [isUploadModalOpen, setUploadModalOpen] = useState(false);
@@ -19,6 +23,8 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const { isConnected, connectWallet } = useWeb3();
+  //const [videos, setVideos] = useState([]);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const loadVideos = async () => {
@@ -71,9 +77,49 @@ const App: React.FC = () => {
     setSelectedVideo(null);
   };
 
+  useEffect(() => {
+    loadVideos();
+  }, []);
+
+  const loadVideos = async () => {
+    try {
+      const videosData = await DatabaseService.getVideos();
+      setVideos(videosData);
+    } catch (error) {
+      console.error('Error loading videos:', error);
+    }
+  };
+
+  const handleVideoUpload = async (videoFile: File, metadata: any) => {
+    try {
+      // 1. Upload to IPFS via ThirdWeb
+      const { videoUri, metadataUri } = await uploadVideoToIPFS(videoFile, metadata);
+      
+      // 2. Store in Supabase
+      const videoData = await DatabaseService.createVideo({
+        title: metadata.title,
+        description: metadata.description,
+        video_url: videoUri,
+        thumbnail_url: metadata.thumbnail,
+        uploader_address: user.wallet_address,
+        category: metadata.category,
+      });
+
+      // 3. Mint NFT on Base (optional)
+      // await mintVideoNFT(metadataUri);
+
+      // 4. Refresh videos
+      loadVideos();
+    } catch (error) {
+      console.error('Upload failed:', error);
+    }
+  };
 
   return (
-    <div className="flex flex-col h-screen bg-base-dark font-sans">
+    <ThirdwebProvider client={client} chain={chain}>
+      <div className="app">
+   
+   <div className="flex flex-col h-screen bg-base-dark font-sans">
       <Header onUploadClick={handleOpenUploadModal} />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar onSelectCategory={handleCategorySelect} selectedCategory={selectedCategory} />
@@ -95,6 +141,8 @@ const App: React.FC = () => {
         />
       )}
     </div>
+      </div>
+    </ThirdwebProvider>
   );
 };
 

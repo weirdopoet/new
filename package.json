@@ -9,8 +9,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@farcaster/core": "^0.18.6",
+    "@farcaster/hub-nodejs": "^0.15.6",
+    "@supabase/supabase-js": "^2.57.0",
+    "@thirdweb-dev/react": "^4.9.4",
+    "@thirdweb-dev/sdk": "^4.0.99",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "thirdweb": "^5.105.40"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
