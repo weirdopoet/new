@@ -1,0 +1,5 @@
+{
+  "name": "Copy of ChainReel - Onchain Video Platform",
+  "description": "A decentralized video sharing platform where creators can upload videos, earn tokens based on engagement, and interact with their community. All actions are simulated on the Base blockchain, with Farcaster mini-app compatibility in mind.",
+  "requestFramePermissions": []
+}
